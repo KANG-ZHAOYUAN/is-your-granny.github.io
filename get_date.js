@@ -10,7 +10,7 @@ function format_date(date) {
   const month = String(date.getMonth() + 1).padStart(2, '0');  // 获取月份，确保是2位
   const day = String(date.getDate()).padStart(2, '0');  // 获取日期，确保是2位
 
-  return `${year}年${month}月${day}日`;  // 返回格式化后的日期
+  return `${year} / ${month} / ${day}`;  // 返回格式化后的日期
 }
 
 // 获取今天的日期并显示
@@ -30,7 +30,7 @@ function fetch_and_display_today_date() {
       const formatted_date = format_date(published_date);  // 格式化日期为指定格式
 
       // 在页面中显示今天的日期
-      document.getElementById('date_display').innerHTML = `今天是：${formatted_date}`;
+      document.getElementById('date_display').innerHTML = `Today is : ${formatted_date}`;
     })
     .catch(error => {
       console.error('Error fetching news data:', error);  // 错误处理
@@ -38,7 +38,7 @@ function fetch_and_display_today_date() {
       // 使用本地时间并停用自动刷新
       const localDate = new Date();
       const formatted_local = format_date(localDate);
-      document.getElementById('date_display').innerHTML = `失败，显示本地时间：${formatted_local}（已停止自动刷新）`;
+      document.getElementById('date_display').innerHTML = `Failed ,displya the time on your cp: ${formatted_local} (auto-refresh stopped)`;
 
       if (typeof refreshInterval !== 'undefined' && refreshInterval !== null) {
         clearInterval(refreshInterval);
