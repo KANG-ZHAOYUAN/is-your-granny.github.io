@@ -30,7 +30,7 @@ function fetch_and_display_today_date() {
       const formatted_date = format_date(published_date);  // 格式化日期为指定格式
 
       // 在页面中显示今天的日期
-      document.getElementById('date_display').innerHTML = `今天是：${formatted_date}`;
+      document.getElementById('date_display').innerHTML = `今天的日期是：${formatted_date}`;
     })
     .catch(error => {
       console.error('Error fetching news data:', error);  // 错误处理
