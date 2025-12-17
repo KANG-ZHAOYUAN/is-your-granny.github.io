@@ -31,7 +31,7 @@
         textarea {
             width: 100%;
             height: 150px;
-            padding: 10px;
+            padding: 14px 120px 10px 10px; /* 给右侧留出空间放按钮，顶部留空避免遮挡 */
             box-sizing: border-box;
             border: 1px solid #ccc;
             resize: vertical; 
@@ -56,6 +56,77 @@
         button:hover {
             background-color: #4cae4c;
         }
+
+        /* Copy button and toast */
+        .output-wrapper { position: relative; }
+        .input-wrapper { position: relative; }
+        .copy-btn {
+            position: absolute;
+            top: 44px; /* 向下移动，确保在 textarea 内 */
+            right: 12px;
+            background: #e0e0e0;
+            color: #000;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            transition: transform 0.1s;
+            z-index: 5;
+        }
+        .copy-btn:active { transform: translateY(1px); }
+        .action-btn {
+            background: #e0e0e0;
+            color: #000;
+            border: none;
+            padding: 6px 10px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: 600;
+            box-shadow: 0 1px 2px rgba(0,0,0,0.08);
+            transition: transform 0.1s;
+            position: absolute;
+            top: 44px; /* 向下移动，确保在 textarea 内 */
+            z-index: 5;
+            font-size: 13px;
+        }
+        .btn-right-1 { right: 12px; }
+        .btn-right-2 { right: 72px; }
+        .action-btn:active, .copy-btn:active { transform: translateY(1px); }
+        .action-btn.shake, .copy-btn.shake { animation: shake 0.35s; }
+        .copy-btn.shake { animation: shake 0.35s; }
+        @keyframes shake {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-4px); }
+            40% { transform: translateX(4px); }
+            60% { transform: translateX(-2px); }
+            80% { transform: translateX(2px); }
+            100% { transform: translateX(0); }
+        }
+        .copy-toast {
+            position: fixed;
+            top: 22%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.95);
+            color: #fff;
+            padding: 12px 18px;
+            border-radius: 6px;
+            z-index: 9999;
+            display: none;
+            font-weight: 600;
+        }
+        .copy-toast.show {
+            display: block;
+            animation: fadeInOut 1.6s ease-in-out;
+        }
+        @keyframes fadeInOut {
+            0% { opacity: 0; transform: translate(-50%, -60%); }
+            10% { opacity: 1; transform: translate(-50%, -50%); }
+            90% { opacity: 1; transform: translate(-50%, -50%); }
+            100% { opacity: 0; transform: translate(-50%, -40%); }
+        }
     </style>
     
 </head>
@@ -64,13 +135,16 @@
     <div class="container">
         <h1>是你奶奶！</h1>
 
-        <div class="dialog-box">
+        <div class="dialog-box input-wrapper">
             <label for="userInput">用户输入：</label>
+            <button id="clearButton" class="action-btn btn-right-1" title="Clear" onclick="clearInput()">Clear</button>
+            <button id="pasteButton" class="action-btn btn-right-2" title="Paste" onclick="pasteInput()">Paste</button>
             <textarea id="userInput" placeholder="在这里输入明文或密文..."></textarea>
         </div>
 
-        <div class="dialog-box">
+        <div class="dialog-box output-wrapper">
             <label for="outputDisplay">输出结果：</label>
+            <button id="copyButton" class="copy-btn" title="Copy" onclick="copyOutput()">Copy</button>
             <textarea id="outputDisplay" placeholder="加密或解密后的结果将显示在这里..." readonly></textarea>
         </div>
 
@@ -79,6 +153,9 @@
             <button id="decryptButton" onclick="handleDecrypt()">解密</button>
         </div>
     </div>
+
+    <!-- 复制成功提示 -->
+    <div id="copyToast" class="copy-toast" aria-hidden="true" role="status"></div>
 
     <script src="cipher.js"></script>
 

@@ -177,3 +177,178 @@ function handleDecrypt() {
         console.error("解密错误:", e);
     }
 }
+
+/**
+ * 复制输出并显示提示（按钮震动 + 屏幕弹窗）
+ */
+function copyOutput() {
+    const output = document.getElementById('outputDisplay');
+    const button = document.getElementById('copyButton');
+    const toast = document.getElementById('copyToast');
+    const text = output ? output.value : '';
+
+    const doShake = () => {
+        if (!button) return;
+        button.classList.add('shake');
+        setTimeout(() => button.classList.remove('shake'), 400);
+    };
+
+    const showToast = (msg) => {
+        if (!toast) return;
+        toast.textContent = msg;
+        toast.classList.add('show');
+        setTimeout(() => toast.classList.remove('show'), 1600);
+    };
+
+    const copyPromise = (navigator.clipboard && navigator.clipboard.writeText)
+        ? navigator.clipboard.writeText(text)
+        : new Promise((resolve, reject) => {
+            try {
+                const ta = document.createElement('textarea');
+                ta.value = text;
+                ta.style.position = 'fixed';
+                ta.style.left = '-9999px';
+                document.body.appendChild(ta);
+                ta.select();
+                document.execCommand('copy');
+                document.body.removeChild(ta);
+                resolve();
+            } catch (e) {
+                reject(e);
+            }
+        });
+
+    copyPromise.then(() => {
+        doShakeButtonById('copyButton');
+        showToastMsg('Successfully copied to clipboard');
+    }).catch((e) => {
+        console.error('Copy failed', e);
+        showToastMsg('Copy failed');
+    });
+}
+
+// 通用：按钮震动（通过 id）
+function doShakeButtonById(buttonId) {
+    const btn = document.getElementById(buttonId);
+    if (!btn) return;
+    btn.classList.add('shake');
+    setTimeout(() => btn.classList.remove('shake'), 400);
+}
+
+// 通用：屏幕提示
+function showToastMsg(msg) {
+    const toast = document.getElementById('copyToast');
+    if (!toast) return;
+    toast.textContent = msg;
+    toast.classList.add('show');
+    setTimeout(() => toast.classList.remove('show'), 1600);
+}
+
+// 粘贴功能：尝试从剪贴板读取文本并插入光标处（若不支持则提示）
+async function pasteInput() {
+    const input = document.getElementById('userInput');
+    if (!input) return;
+
+    try {
+        if (navigator.clipboard && navigator.clipboard.readText) {
+            const text = await navigator.clipboard.readText();
+            if (text !== undefined && text !== null && text !== '') {
+                const start = input.selectionStart != null ? input.selectionStart : input.value.length;
+                const end = input.selectionEnd != null ? input.selectionEnd : input.value.length;
+                input.value = input.value.slice(0, start) + text + input.value.slice(end);
+                input.focus();
+                input.selectionStart = input.selectionEnd = start + text.length;
+                doShakeButtonById('pasteButton');
+                showToastMsg('Pasted from clipboard');
+            } else {
+                doShakeButtonById('pasteButton');
+                showToastMsg('Clipboard empty');
+            }
+        } else {
+            showToastMsg('Paste not supported; press Ctrl/Cmd+V inside the input');
+        }
+    } catch (e) {
+        console.error('Paste failed', e);
+        showToastMsg('Paste failed');
+    }
+}
+
+// 清空输入
+function clearInput() {
+    const input = document.getElementById('userInput');
+    if (!input) return;
+    input.value = '';
+    doShakeButtonById('clearButton');
+    showToastMsg('Cleared input');
+}
+
+// 动态计算并设置按钮位置（确保按钮完全位于对应的 textarea 内部）
+function positionButtonsInsideTextareas() {
+    try {
+        // 输出区域 Copy 按钮
+        const outWrapper = document.querySelector('.output-wrapper');
+        const outTA = document.getElementById('outputDisplay');
+        const copyBtn = document.getElementById('copyButton');
+        if (outWrapper && outTA && copyBtn) {
+            const top = outTA.offsetTop + 8; // 文字框内靠下偏移
+            const right = Math.max(8, outWrapper.clientWidth - (outTA.offsetLeft + outTA.clientWidth) + 12);
+            const SHIFT_RIGHT = -8; // 向右微调（负值会使按钮靠右）
+            copyBtn.style.top = `${top}px`;
+            copyBtn.style.right = `${right + SHIFT_RIGHT}px`;
+
+            // 微调：如果按钮超出 textarea 底部，则向上移动
+            const taRect = outTA.getBoundingClientRect();
+            const btnRect = copyBtn.getBoundingClientRect();
+            if (btnRect.bottom > taRect.bottom - 4) {
+                const delta = btnRect.bottom - taRect.bottom + 4;
+                copyBtn.style.top = `${top - delta}px`;
+            }
+        }
+
+        // 输入区域 Paste / Clear 按钮
+        const inWrapper = document.querySelector('.input-wrapper');
+        const inTA = document.getElementById('userInput');
+        const clearBtn = document.getElementById('clearButton');
+        const pasteBtn = document.getElementById('pasteButton');
+        if (inWrapper && inTA && clearBtn && pasteBtn) {
+            const top = inTA.offsetTop + 8;
+            const rightBase = Math.max(8, inWrapper.clientWidth - (inTA.offsetLeft + inTA.clientWidth) + 12);
+
+            // 将 clear 放在最右 (靠近 textarea 右上角)，paste 在其左侧，保留间隙
+            const gap = 8;
+            const SHIFT_RIGHT_INPUT = -12; // 向右微调输入区域按钮（负值使按钮靠右）
+            const clearRight = rightBase + SHIFT_RIGHT_INPUT;
+            const pasteRight = clearRight + clearBtn.offsetWidth + gap;
+
+            clearBtn.style.top = `${top}px`;
+            clearBtn.style.right = `${clearRight}px`;
+            pasteBtn.style.top = `${top}px`;
+            pasteBtn.style.right = `${pasteRight}px`;
+
+            // 微调：如果按钮超出 textarea 底部，则向上移动
+            const taRect = inTA.getBoundingClientRect();
+            const cbRect = clearBtn.getBoundingClientRect();
+            const pbRect = pasteBtn.getBoundingClientRect();
+            let adjust = 0;
+            if (cbRect.bottom > taRect.bottom - 4) adjust = Math.max(adjust, cbRect.bottom - taRect.bottom + 4);
+            if (pbRect.bottom > taRect.bottom - 4) adjust = Math.max(adjust, pbRect.bottom - taRect.bottom + 4);
+            if (adjust > 0) {
+                clearBtn.style.top = `${top - adjust}px`;
+                pasteBtn.style.top = `${top - adjust}px`;
+            }
+        }
+    } catch (e) {
+        console.error('positionButtonsInsideTextareas error:', e);
+    }
+}
+
+// 在加载和窗口大小变化时重新计算位置
+window.addEventListener('DOMContentLoaded', () => setTimeout(positionButtonsInsideTextareas, 50));
+window.addEventListener('resize', () => setTimeout(positionButtonsInsideTextareas, 50));
+
+// 也在交互后（如粘贴、清空、复制）重新计算以防布局变化
+const observeButtons = ['copyButton', 'pasteButton', 'clearButton'];
+observeButtons.forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('transitionend', positionButtonsInsideTextareas);
+});
