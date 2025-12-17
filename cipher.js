@@ -173,7 +173,7 @@ function handleDecrypt() {
         output.value = decoder.decode(bytes);
 
     } catch (e) {
-        document.getElementById('outputDisplay').value = "解密出错：" + e.message;
+        document.getElementById('outputDisplay').value = e.message;
         console.error("解密错误:", e);
     }
 }
