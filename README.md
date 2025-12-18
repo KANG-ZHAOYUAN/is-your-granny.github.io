@@ -1,4 +1,9 @@
-# KANG-ZHAOYUAN.github.io
+# 是你奶奶！！！
+
+<div style="display:flex; gap:12px; align-items:center; justify-content:center; margin-bottom:12px;">
+  <img src="Is_your_granny_1.gif" alt="granny-left" style="width:320px; height:320px; object-fit:cover;" />
+  <img src="Is_your_granny.gif" alt="granny-right" style="width:320px; height:320px; object-fit:cover;" />
+</div>
 
 ## 项目简介
 
